@@ -5,6 +5,7 @@ import { AppProviders } from "@/components/providers/AppProviders";
 import {
   ClerkProvider
 } from '@clerk/nextjs'
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({
             {children}
           </AppProviders>
         </body>
+        <Toaster richColors />
       </html>
     </ClerkProvider >
   );
