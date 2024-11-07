@@ -15,6 +15,9 @@ export function FlowValidationContextProvider({
     children: ReactNode;
 }) {
     const [invalidInputs, setInvalidInputs] = useState<AppNodeMissingInputs[]>([]);
+
+
+
     const clearErrors = () => {
         setInvalidInputs([])
     }

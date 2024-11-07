@@ -9,26 +9,30 @@ const useExecutionPlan = () => {
     const { toObject } = useReactFlow();
     const { setInvalidInputs, clearErrors } = useFlowValidation()
 
-    const handleError = useCallback((error: any) => {
-        switch (error.type) {
-            case FlowToExecutionPlanValidationError.INVALID_INPUTS:
-                toast.error("Not all inputs values are set");
-                setInvalidInputs(error.invalidInputs);
-                break;
-            default:
-                toast.error("Something went wrong");
-                break;
-
-        }
-    }, [setInvalidInputs])
+    const handleError = useCallback(
+        (error: any) => {
+            switch (error.type) {
+                case FlowToExecutionPlanValidationError.NO_ENTRY_POINT:
+                    toast.error("No entry point found in the flow.");
+                    break;
+                case FlowToExecutionPlanValidationError.INVALID_INPUTS:
+                    toast.error("Not all inputs values are set");
+                    // setInvalidInputs(error.invalidInputs);
+                    break;
+                default:
+                    toast.error("Something went wrong");
+                    break;
+            }
+        }, [setInvalidInputs]
+    )
 
     const generateExecutionPlan = useCallback(() => {
         const { nodes, edges } = toObject();
-        const { executionPlan, error } = FlowToExecutionPlan(nodes as AppNode[], edges);
+        const { executionPlan, error } = FlowToExecutionPlan(nodes as AppNode[], edges, setInvalidInputs);
 
         if (error) {
             handleError(error);
-            return null
+            return null;
         }
         clearErrors();
         return executionPlan;

@@ -5,6 +5,7 @@ import {
 } from "@/types/workflow";
 import { Edge, getIncomers } from "@xyflow/react";
 import { TaskRegistry } from "./task/registry";
+import { Dispatch, SetStateAction } from "react";
 export enum FlowToExecutionPlanValidationError {
   "NO_ENTRY_POINT",
   "INVALID_INPUTS",
@@ -20,7 +21,8 @@ type FlowToExecutionPlanType = {
 
 export function FlowToExecutionPlan(
   nodes: AppNode[],
-  edges: Edge[]
+  edges: Edge[],
+  setInvalidInputs: Dispatch<SetStateAction<AppNodeMissingInputs[]>>
 ): FlowToExecutionPlanType {
   const entryPoint = nodes.find(
     (node) => TaskRegistry[node.data.type].isEntryPoint
@@ -43,6 +45,7 @@ export function FlowToExecutionPlan(
       inputs: invalidInputs,
     });
   }
+
   const executionPlan: WorkflowExecutionPlan = [
     {
       phase: 1,
@@ -63,10 +66,11 @@ export function FlowToExecutionPlan(
         continue;
       }
       const invalidInputs = getInvalidInputs(currentNode, edges, planned);
+      // console.log("invalidInputs", invalidInputs);
       if (invalidInputs.length > 0) {
         const incomers = getIncomers(currentNode, nodes, edges);
         if (incomers.every((incomer) => planned.has(incomer.id))) {
-          // Ia all incoming incomers/edges are planned and there are still invalid inputs
+          // If all incoming incomers/edges are planned and there are still invalid inputs
           // this means that this particular mode has ana invalid input
           // which means that the  wotkflow is invalid
           console.error("invalid inputs", currentNode.id, invalidInputs);
@@ -87,7 +91,11 @@ export function FlowToExecutionPlan(
     }
     executionPlan.push(nextPhase);
   }
+
+  // console.log("inputerror", inputWithErrors);
   if (inputWithErrors.length > 0) {
+    // console.log("Setting invalidInputs to context:", inputWithErrors);
+    setInvalidInputs(inputWithErrors);
     return {
       error: {
         type: FlowToExecutionPlanValidationError.INVALID_INPUTS,
@@ -95,6 +103,7 @@ export function FlowToExecutionPlan(
       },
     };
   }
+  setInvalidInputs([]); // Clear invalid inputs if no errors found
   return { executionPlan };
 }
 
